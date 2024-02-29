@@ -100,7 +100,5 @@ class UserServiceImplTest {
                 .hasMessage(WRONG_FIELDS);
 
         then(userRepo).shouldHaveNoInteractions();
-
-        throw new RuntimeException();
     }
 }
