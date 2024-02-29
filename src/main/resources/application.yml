@@ -9,3 +9,8 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: validate
+
+application:
+  crons:
+    setDefaultAvatar: 0 0 0 * * *
+    deleteUnwantedPosts: 0 0 0 0 * *

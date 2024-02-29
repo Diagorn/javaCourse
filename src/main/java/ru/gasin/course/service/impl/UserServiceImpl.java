@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService {
         user.setCreatedAt(LocalDate.now());
         user.setRating((byte) 5);
 
-        userRepo.saveAndFlush(user);
+        user = userRepo.save(user);
 
         return user.getId();
     }

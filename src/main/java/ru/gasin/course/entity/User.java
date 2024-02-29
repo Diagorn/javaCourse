@@ -1,10 +1,7 @@
 package ru.gasin.course.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -13,8 +10,10 @@ import java.util.List;
 @Table(name = "usr")
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class User extends AbstractEntity {
     @Column(name = "email", nullable = false, length = 150)
     private String email;
