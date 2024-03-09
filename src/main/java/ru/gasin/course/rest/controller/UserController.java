@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.gasin.course.entity.User;
 import ru.gasin.course.rest.dto.EditUserRequest;
@@ -31,6 +33,7 @@ public class UserController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Long> add(@RequestBody NewUserRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.addNewUser(request));
     }

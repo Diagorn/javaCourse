@@ -1,16 +1,21 @@
 package ru.gasin.course.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import ru.gasin.course.entity.User;
+import ru.gasin.course.exception.exceptions.BadRequestException;
 import ru.gasin.course.exception.exceptions.EmptyFieldsException;
 import ru.gasin.course.exception.exceptions.NotFoundException;
 import ru.gasin.course.exception.exceptions.WeakPasswordException;
 import ru.gasin.course.repo.UserRepo;
 import ru.gasin.course.rest.dto.EditUserRequest;
 import ru.gasin.course.rest.dto.NewUserRequest;
+import ru.gasin.course.rest.dto.RegistrationRequest;
 import ru.gasin.course.rest.dto.UserDto;
 import ru.gasin.course.service.UserService;
 
@@ -23,6 +28,7 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepo userRepo;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public List<UserDto> findAllUsers() {
@@ -44,8 +50,8 @@ public class UserServiceImpl implements UserService {
     public Long addNewUser(NewUserRequest request) {
 
         if (!StringUtils.hasText(request.getEmail()) ||
-            !StringUtils.hasText(request.getUsername()) ||
-            !StringUtils.hasText(request.getPassword())) {
+                !StringUtils.hasText(request.getUsername()) ||
+                !StringUtils.hasText(request.getPassword())) {
             throw new EmptyFieldsException("Некорректные поля в запросе - необходимо заполнить необходимые");
         }
 
@@ -55,7 +61,7 @@ public class UserServiceImpl implements UserService {
 
         User user = new User();
         user.setUsername(request.getUsername());
-        user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setEmail(request.getEmail());
         user.setCreatedAt(LocalDate.now());
         user.setRating((byte) 5);
@@ -111,6 +117,30 @@ public class UserServiceImpl implements UserService {
         return buildDto(user);
     }
 
+    @Override
+    public void register(RegistrationRequest request) {
+        if (!StringUtils.hasText(request.getUsername())
+                || userRepo.existsByUsername(request.getUsername())) {
+            throw new BadRequestException("Невалидный логин");
+        }
+
+        if (!StringUtils.hasText(request.getPassword())
+                || request.getPassword().length() < 8) {
+            throw new WeakPasswordException("Пароль слишком слабый");
+        }
+
+        String password = passwordEncoder.encode(request.getPassword());
+
+        User user = new User();
+        user.setPassword(password);
+        user.setEmail(request.getEmail());
+        user.setUsername(request.getUsername());
+        user.setCreatedAt(LocalDate.now());
+        user.setRating((byte) 5);
+
+        userRepo.save(user);
+    }
+
     private UserDto buildDto(User user) {
         return UserDto.builder()
                 .email(user.getEmail())
@@ -120,5 +150,12 @@ public class UserServiceImpl implements UserService {
                 .postsCount(user.getPosts().size())
                 .commentsCount(user.getComments().size())
                 .build();
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepo.findByUsername(username)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("Не удалось загрузить пользователя с логином " + username));
     }
 }

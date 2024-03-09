@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/course_test
+    username: postgres
+    password: 123
+
+  jpa:
+    generate-ddl: true
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+
+application:
+  crons:
+    setDefaultAvatar: 0 0 0 * * *
+    deleteUnwantedPosts: 0 0 0 0 * *

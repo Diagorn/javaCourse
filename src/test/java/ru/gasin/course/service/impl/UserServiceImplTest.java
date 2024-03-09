@@ -8,6 +8,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import ru.gasin.course.entity.User;
 import ru.gasin.course.exception.exceptions.EmptyFieldsException;
 import ru.gasin.course.repo.UserRepo;
@@ -34,13 +35,16 @@ class UserServiceImplTest {
     @Mock
     private UserRepo userRepo;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     @Captor
     private ArgumentCaptor<User> userArgumentCaptor;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        this.userService = new UserServiceImpl(userRepo);
+        this.userService = new UserServiceImpl(userRepo, passwordEncoder);
     }
 
     @Test
@@ -64,6 +68,9 @@ class UserServiceImplTest {
 
         given(userRepo.save(any(User.class)))
                 .willReturn(expectedUser);
+
+        given(passwordEncoder.encode(any(String.class)))
+                .willReturn(PASSWORD);
 
         // when
         Long newId = userService.addNewUser(request);

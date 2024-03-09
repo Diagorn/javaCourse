@@ -2,10 +2,20 @@ package ru.gasin.course.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
+/**
+ * Репрезентация таблицы пользователя
+ *
+ * @author Diagorn
+ */
 @Entity
 @Table(name = "usr")
 @Getter
@@ -14,7 +24,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class User extends AbstractEntity {
+public class User extends AbstractEntity implements UserDetails {
     @Column(name = "email", nullable = false, length = 150)
     private String email;
     @Column(name = "password", nullable = false, length = 150)
@@ -40,4 +50,31 @@ public class User extends AbstractEntity {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private List<Role> roles;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return roles == null ? List.of() : roles.stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName()))
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }
